@@ -1,0 +1,147 @@
+<?php namespace ProcessWire;
+
+/**
+ * ProcessWire Accessibility Tools Module
+ *
+ * See README.md for usage instructions.
+ *
+ * @author Marcus Herrmann <github@marcus-herrmann.com>
+ * @version 0.1.0
+ * @see https://github.com/marcus-herrmann/PWAT
+ */
+
+class Pwat extends Process implements ConfigurableModule
+{
+
+    const rolename = 'pwat_user';
+
+
+    /**
+     * getModuleInfo is a module required by all modules to tell ProcessWire about them
+     *
+     * @return array
+     *
+     */
+    public static function getModuleInfo()
+    {
+
+        return array(
+          'title'    => 'ProcessWire Accessibility Tools (PWAT)',
+          'version'  => 10,
+          'summary'  => '',
+          'href'     => 'https://processwire.com',
+          'singular' => true,
+          'autoload' => true,
+          'icon'     => 'universal-access',
+        );
+    }
+
+    /**
+     *
+     */
+    static public function getDefaultConfig()
+    {
+        return array(
+          'visibleOnAdminPages' => 0,
+          'enableTota11y' => 1
+        );
+    }
+
+
+    /**
+     * @param array $data
+     *
+     * @return \ProcessWire\InputfieldWrapper
+     */
+    static public function getModuleConfigInputfields(array $data)
+    {
+
+        $modules  = wire('modules');
+        $fields   = new InputfieldWrapper();
+        $defaults = self::getDefaultConfig();
+        $data     = array_merge($defaults, $data);
+
+        $field = $modules->get('InputfieldCheckbox');
+        $field->attr('name', 'visibleOnAdminPages');
+        $field->label = __('Make PWAT visible On Admin Pages');
+
+
+        $field->attr('value',
+          $data['visibleOnAdminPages'] ? $data['visibleOnAdminPages'] : 0);
+        $field->attr('checked',
+          $data['visibleOnAdminPages'] === 1 ? 'checked' : '');
+
+        $fields->add($field);
+
+        $field = $modules->get('InputfieldCheckbox');
+        $field->attr('name', 'enableTota11y');
+        $field->label = __('Enable tota11y');
+
+        $field->attr('value',
+          $data['enableTota11y'] ? $data['enableTota11y'] : 0);
+        $field->attr('checked',
+          $data['enableTota11y'] === 1 ? 'checked' : '');
+
+        $fields->add($field);
+
+        return $fields;
+    }
+
+    public function ___install()
+    {
+
+        if (!wire("roles")->get(self::rolename)->id) {
+            wire("roles")->add(self::rolename);
+        }
+    }
+
+    public function ___uninstall()
+    {
+
+        if (wire("roles")->get(self::rolename)->id) {
+            wire("roles")->delete(wire('roles')->get(self::rolename));
+        }
+    }
+
+    public function init()
+    {
+        $this->addHookAfter('Page::render', $this, 'addPwatAssets');
+    }
+
+
+    /**
+     * Example2 hooks into every page after it's rendered and adds "Hello World" text at the bottom
+     *
+     * @param HookEvent $event
+     *
+     */
+    public function addPwatAssets($event)
+    {
+
+        /** @var Page $page */
+        $page = $event->object;
+
+        // Check if user has required role
+        if (!wire('user')->hasRole(self::rolename)) {
+            return;
+        }
+
+        // Check if tools are allowed on admin pages
+        if ($page->template == 'admin' && $this->visibleOnAdminPages != "1") {
+            return;
+        }
+
+        // If totally is active, add its assets
+        if ($this->enableTota11y == "1") $this->addTota11yAssets($event);
+
+    }
+
+    protected function addTota11yAssets($event) {
+
+        return $event->return = str_replace("</body>",
+          "<script src='". wire('config')->urls->siteModules . "Pwat/js/totally.min.js'></script></body>", $event->return);
+
+    }
+
+
+}
