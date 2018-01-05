@@ -1,0 +1,46 @@
+.pwat-button {
+    background-color: #333 ;
+    display: block;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px ;
+    border: none;
+    -webkit-appearance: none;
+    width: 49px;
+    height: 39px;
+    position: fixed;
+    bottom: 0;
+    color: #fff;
+    font-size: .8em;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.pwat-visually-hidden {
+    clip: rect(1px 1px 1px 1px);
+    clip: rect(1px, 1px, 1px, 1px);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+#pwat-grayscale-toggle {
+    left: 80px;
+}
+
+#pwat-grayscale-toggle[aria-pressed="true"] {
+    text-decoration: underline;
+}
+
+#pwat-wave-link {
+    left: 150px;
+    text-decoration: none;
+    text-align: center;
+    line-height: 39px;
+}
+
+#pwat-wave-link:active,
+#pwat-wave-link:hover,
+#pwat-wave-link:visited {
+    color: #fff;
+}

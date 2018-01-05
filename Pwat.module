@@ -17,33 +17,32 @@ class Pwat extends Process implements ConfigurableModule
 
 
     /**
-     * getModuleInfo is a module required by all modules to tell ProcessWire about them
-     *
      * @return array
-     *
      */
     public static function getModuleInfo()
     {
 
         return array(
-          'title'    => 'ProcessWire Accessibility Tools (PWAT)',
+          'title'    => 'PWAT',
           'version'  => 10,
-          'summary'  => '',
-          'href'     => 'https://processwire.com',
+          'summary'  => 'ProcessWire Accessibility Tools',
           'singular' => true,
           'autoload' => true,
           'icon'     => 'universal-access',
         );
     }
 
+
     /**
-     *
+     * @return array
      */
     static public function getDefaultConfig()
     {
         return array(
-          'visibleOnAdminPages' => 0,
-          'enableTota11y' => 1
+          'visibleOnAdminPages'   => 0,
+          'enableTota11y'         => 1,
+          'enableGrayscaleToggle' => 0,
+          'enableWaveLink'        => 0
         );
     }
 
@@ -63,8 +62,7 @@ class Pwat extends Process implements ConfigurableModule
 
         $field = $modules->get('InputfieldCheckbox');
         $field->attr('name', 'visibleOnAdminPages');
-        $field->label = __('Make PWAT visible On Admin Pages');
-
+        $field->label = __('PWAT visible on admin pages');
 
         $field->attr('value',
           $data['visibleOnAdminPages'] ? $data['visibleOnAdminPages'] : 0);
@@ -84,6 +82,29 @@ class Pwat extends Process implements ConfigurableModule
 
         $fields->add($field);
 
+        $field = $modules->get('InputfieldCheckbox');
+        $field->attr('name', 'enableGrayscaleToggle');
+        $field->label = __('Enable grayscale toggle');
+
+        $field->attr('value',
+          $data['enableGrayscaleToggle'] ? $data['enableGrayscaleToggle'] : 0);
+        $field->attr('checked',
+          $data['enableGrayscaleToggle'] === 1 ? 'checked' : '');
+
+        $fields->add($field);
+
+        $field = $modules->get('InputfieldCheckbox');
+        $field->attr('name', 'enableWaveLink');
+        $field->label = __('Enable link to WAVE');
+
+        $field->attr('value',
+          $data['enableWaveLink'] ? $data['enableWaveLink'] : 0);
+        $field->attr('checked',
+          $data['enableWaveLink'] === 1 ? 'checked' : '');
+
+        $fields->add($field);
+
+
         return $fields;
     }
 
@@ -93,6 +114,8 @@ class Pwat extends Process implements ConfigurableModule
         if (!wire("roles")->get(self::rolename)->id) {
             wire("roles")->add(self::rolename);
         }
+
+        $this->message("Module is installed. Do not forget to grant users the 'pwat_user' role.");
     }
 
     public function ___uninstall()
@@ -108,17 +131,9 @@ class Pwat extends Process implements ConfigurableModule
         $this->addHookAfter('Page::render', $this, 'addPwatAssets');
     }
 
-
-    /**
-     * Example2 hooks into every page after it's rendered and adds "Hello World" text at the bottom
-     *
-     * @param HookEvent $event
-     *
-     */
     public function addPwatAssets($event)
     {
 
-        /** @var Page $page */
         $page = $event->object;
 
         // Check if user has required role
@@ -132,16 +147,70 @@ class Pwat extends Process implements ConfigurableModule
         }
 
         // If totally is active, add its assets
-        if ($this->enableTota11y == "1") $this->addTota11yAssets($event);
+        if ($this->enableTota11y == "1") {
+            $this->addTota11yAssets($event);
+        }
 
-    }
+        // If greyscale is active, add its assets
+        if ($this->enableGrayscaleToggle == "1") {
+            $this->addGrayscaleToggle($event);
+        }
 
-    protected function addTota11yAssets($event) {
+        // If greyscale is active, add its assets
+        if ($this->enableWaveLink == "1") {
+            $this->addWaveLink($event);
+        }
 
+        // In any case, add generic PWAT assets
         return $event->return = str_replace("</body>",
-          "<script src='". wire('config')->urls->siteModules . "Pwat/js/totally.min.js'></script></body>", $event->return);
-
+          "<link rel='stylesheet' href='" . wire('config')->urls->siteModules . "Pwat/css/pwat.css'></body>",
+          $event->return);
     }
 
+    /**
+     * @param $event
+     *
+     * @return mixed
+     */
+    private function addTota11yAssets($event)
+    {
+        return $event->return = str_replace("</body>",
+          "<script src='" . wire('config')->urls->siteModules . "Pwat/js/totally.min.js'></script>
+                    </body>",
+          $event->return);
+    }
+
+    /**
+     * @param $event
+     *
+     * @return mixed
+     */
+    private function addGrayscaleToggle($event)
+    {
+        return $event->return = str_replace("</body>",
+          "<button aria-pressed='false' class='pwat-button' 
+                    id='pwat-grayscale-toggle' title='Toggle grayscale'><span aria-hidden='true'>S/W</span>
+                    <span class='pwat-visually-hidden'>Toggle grayscale</span>
+                    </button>
+                    <script src='" . wire('config')->urls->siteModules . "Pwat/js/grayscale.js'></script></body>",
+          $event->return);
+    }
+
+    /**
+     * @param $event
+     *
+     * @return mixed
+     */
+    private function addWaveLink($event)
+    {
+        return $event->return = str_replace("</body>",
+          "<a href='http://wave.webaim.org/report#/{$event->object->httpUrl}' 
+                    target='_blank' id='pwat-wave-link' class='pwat-button' 
+                    aria-label='Test page with WAVE' title='Test page with WAVE'>
+                    <span aria-hidden='true'>WAVE</span>
+                   <span class='pwat-visually-hidden'>Test page with WAVE</span></a>
+                   </body>",
+          $event->return);
+    }
 
 }
