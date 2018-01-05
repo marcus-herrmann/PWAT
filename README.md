@@ -8,7 +8,6 @@ A small, but hopefully growing toolkit for creating accessible ProcessWire sites
 ![tota11y menu opened](https://marcus.io/files/pwat/1.png)
 ![Grayscale active](https://marcus.io/files/pwat/3.png)
 
----
 ## Installation
 
 Once you have downloaded PWAT, go to your module Install page and click "Check for new modules". Find "ProcessWire Accessibility Tools" and click "Install". During installation, PWAT creates a new role 'pwat_user'. To use the Accessibility Tools, you have to grant user this role. 
@@ -25,6 +24,8 @@ PWAT starts with only the tota11y script activated. On the configuration page yo
 * if tota11y is active
 * if the grayscale toggle is active
 * if the link to WAVE will be visible
+
+![PWAT config page](https://marcus.io/files/pwat/4.png)
 
 ## Credits
 
