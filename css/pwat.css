@@ -9,6 +9,8 @@
     height: 39px;
     position: fixed;
     bottom: 0;
+    margin: 0;
+    padding: 0;
     color: #fff;
     font-size: .8em;
     font-family: "Helvetica Neue", Arial, sans-serif;
